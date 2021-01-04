@@ -705,10 +705,10 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
     }
 
     void invokeWrite(Object msg, ChannelPromise promise) {
-        if (invokeHandler()) {
+        if (invokeHandler()) {    // 如果是ChannelHandler, 则调用Handler中的write方法。在write方法中会手动执行
             invokeWrite0(msg, promise);
         } else {
-            write(msg, promise);
+            write(msg, promise);  // 否则继续找下一个Handler
         }
     }
 
@@ -768,6 +768,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         }
     }
 
+    // write其实不干活，write只是找到下一个Handler，让下一个Handler干活，如果下一个Handler也不干活，继续找下一个。
     private void write(Object msg, boolean flush, ChannelPromise promise) {
         ObjectUtil.checkNotNull(msg, "msg");
         try {
@@ -786,6 +787,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         final Object m = pipeline.touch(msg, next);
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
+            // 调用下一个Context
             if (flush) {
                 next.invokeWriteAndFlush(m, promise);
             } else {
@@ -882,6 +884,11 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return ctx;
     }
 
+    /**
+     * 找到下一个OutboundHandler
+     * @param mask
+     * @return
+     */
     private AbstractChannelHandlerContext findContextOutbound(int mask) {
         AbstractChannelHandlerContext ctx = this;
         EventExecutor currentExecutor = executor();

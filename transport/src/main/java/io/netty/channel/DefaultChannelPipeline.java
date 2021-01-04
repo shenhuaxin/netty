@@ -200,7 +200,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         final AbstractChannelHandlerContext newCtx;
         synchronized (this) {
             checkMultiplicity(handler);
-
+            // 将Handler包装为一个Context
             newCtx = newContext(group, filterName(name, handler), handler);
 
             addLast0(newCtx);
