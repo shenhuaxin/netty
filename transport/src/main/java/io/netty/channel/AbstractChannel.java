@@ -464,7 +464,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             AbstractChannel.this.eventLoop = eventLoop;
 
-            if (eventLoop.inEventLoop()) {
+            if (eventLoop.inEventLoop()) {      // 当前线程就是eventLoop的线程， 直接注册， 否则就开启一个线程。
                 register0(promise);
             } else {
                 try {
