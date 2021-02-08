@@ -200,7 +200,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         final AbstractChannelHandlerContext newCtx;
         synchronized (this) {
             checkMultiplicity(handler);
-
+            // 将Handler包装为一个Context
             newCtx = newContext(group, filterName(name, handler), handler);
 
             addLast0(newCtx);
@@ -1413,7 +1413,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) {
             ctx.fireChannelReadComplete();
-
+            // 读取完毕之后，检查一下autoread==ture， 再次读取（将读事件注册）。
+            // 这里有个疑问：AbstractNioByteChannel.read 中读取完毕后，如果autoread==false, 移除OP_READ, ==true没有移除。为什么这里需要再次注册OP_READ
+            // 我的理解：不要将一个地方的逻辑依赖于其他地方。比如： channelReadComplete之后是否需要再读一次，只决定于autoread==true, 而不依赖其他地方是否将这个OP_READ未移除。
             readIfIsAutoRead();
         }
 
